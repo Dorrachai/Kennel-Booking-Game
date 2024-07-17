@@ -1,9 +1,19 @@
 #include <iostream>
 #include <ctime>
 #include <iomanip>
-#include "Kennel.h"
+#include <cstdlib>
+#include <unistd.h>
+#include <vector>
+#include <memory>
+#include <algorithm>
+#include <fstream>
+#include "Animal.h"
 #include "Dog.h"
 #include "Cat.h"
+#include "User.h"
+#include "Kennel.h"
+#include "CoinFlip.h"
+
 using namespace std;
 
 time_t getCurrentTime() {
@@ -31,12 +41,16 @@ void displayMenu() {
     cout << "6. Save Bookings to File" << endl;
     cout << "7. Load Bookings from File" << endl;
     cout << "8. Pay for Booking" << endl;
-    cout << "9. Exit" << endl;
+    cout << "9. View Cookies" << endl;
+    cout << "10. Play Coin Flip Game" << endl;
+    cout << "11. Exit" << endl;
     cout << "Enter your choice: ";
 }
 
 int main() {
+    srand(time(0)); // Seed for random number generator
     Kennel kennel(10);
+    User user; // Create a User instance
     int choice;
     bool running = true;
 
@@ -109,12 +123,19 @@ int main() {
                 cout << "Enter number of days: ";
                 cin >> days;
 
+                int cost = days * 1; // 1 cookie per day
+                if (!user.spendCookies(cost)) {
+                    cout << "Not enough cookies to make the booking." << endl;
+                    break;
+                }
+
                 time_t startDate = getCurrentTime();
                 time_t endDate = addDaysToTime(startDate, days);
                 shared_ptr<Booking> booking = make_shared<Booking>(animal, startDate, endDate);
                 kennel.addBooking(booking);
                 cout << "Booking created successfully!" << endl;
                 cout << animal->getName() << " will be in the kennel until " << formatTime(endDate) << "." << endl;
+                cout << "Cost: " << cost << " cookies. Remaining cookies: " << user.getCookies() << endl;
                 break;
             }
             case 3: {
@@ -200,6 +221,14 @@ int main() {
                 break;
             }
             case 9: {
+                cout << "You have " << user.getCookies() << " cookies." << endl;
+                break;
+            }
+            case 10: { // New option for coin flip game
+                playCoinFlipGame(user);
+                break;
+            }
+            case 11: {
                 running = false;
                 cout << "Exiting the system. Goodbye!" << endl;
                 break;
